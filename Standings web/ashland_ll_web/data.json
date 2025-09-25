@@ -1,0 +1,91 @@
+{
+  "teams": [
+    {
+      "name": "Phillies",
+      "wins": 5,
+      "losses": 2,
+      "logo": "https://upload.wikimedia.org/wikipedia/en/f/f0/Philadelphia_Phillies_%282019%29_logo.png"
+    },
+    {
+      "name": "Pirates",
+      "wins": 4,
+      "losses": 3,
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/9/92/Pittsburgh_Pirates_Cap_Logo.svg"
+    },
+    {
+      "name": "Orioles",
+      "wins": 3,
+      "losses": 4,
+      "logo": "https://upload.wikimedia.org/wikipedia/en/7/75/Baltimore_Orioles_cap_logo.svg"
+    },
+    {
+      "name": "Yankees",
+      "wins": 6,
+      "losses": 1,
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/2/25/NewYorkYankees_PrimaryLogo.svg"
+    },
+    {
+      "name": "Athletics",
+      "wins": 2,
+      "losses": 5,
+      "logo": "https://upload.wikimedia.org/wikipedia/commons/a/a4/Oakland_A%27s_logo.svg"
+    },
+    {
+      "name": "Dodgers",
+      "wins": 1,
+      "losses": 6,
+      "logo": "https://upload.wikimedia.org/wikipedia/en/0/0e/Los_Angeles_Dodgers_Logo.svg"
+    }
+  ],
+  "games": [
+    {
+      "date": "9/1",
+      "winner": "Yankees",
+      "winnerScore": 6,
+      "loser": "Dodgers",
+      "loserScore": 2
+    },
+    {
+      "date": "9/2",
+      "winner": "Phillies",
+      "winnerScore": 7,
+      "loser": "Pirates",
+      "loserScore": 4
+    },
+    {
+      "date": "9/3",
+      "winner": "Athletics",
+      "winnerScore": 5,
+      "loser": "Orioles",
+      "loserScore": 3
+    },
+    {
+      "date": "9/4",
+      "winner": "Yankees",
+      "winnerScore": 8,
+      "loser": "Phillies",
+      "loserScore": 6
+    },
+    {
+      "date": "9/5",
+      "winner": "Pirates",
+      "winnerScore": 9,
+      "loser": "Dodgers",
+      "loserScore": 2
+    },
+    {
+      "date": "9/6",
+      "winner": "Orioles",
+      "winnerScore": 4,
+      "loser": "Phillies",
+      "loserScore": 3
+    },
+    {
+      "date": "9/7",
+      "winner": "Yankees",
+      "winnerScore": 10,
+      "loser": "Athletics",
+      "loserScore": 5
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Ashland Little League Standings</title>
+  <!-- Use URL-encoded filename for favicon (spaces -> %20) -->
+  <link rel="icon" type="image/png" href="Circle%20Baseball%20Club%20Sports%20Transparent%20ttcopy.png">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; text-align: center; background:#f5f7fa; }
+    header { display:flex; align-items:center; justify-content:center; gap:16px; }
+    header img.logo { height:64px; width:auto; display:block; }
+    h1 { margin:0; font-size:1.5rem; }
+    .table-container { overflow-x:auto; margin:20px auto; width:100%; max-width:1000px; }
+    table { border-collapse:collapse; width:100%; min-width:600px; background:white; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+    th, td { padding:10px 12px; border:1px solid #e6e9ee; text-align:center; }
+    th { background:#0074D9; color:#fff; }
+    tbody tr:nth-child(even) { background:#fbfcfd; }
+    .team { display:flex; align-items:center; gap:12px; justify-content:center; }
+    .team img { width:28px; height:28px; object-fit:contain; margin-right:8px; }
+    /* scores layout */
+    #scores td { padding-top:18px; padding-bottom:18px; }
+    .matchup { display:flex; align-items:center; justify-content:center; gap:40px; flex-wrap:wrap; }
+    .team-block { display:flex; align-items:center; gap:30px; white-space:nowrap; }
+    .team-block img { margin-right:12px; }
+    .winner { font-weight:bold; color:green; }
+    .loser { color:#b33; }
+    .vs { margin: 0 32px; font-weight:600; color:#333; }
+    @media (max-width:520px) {
+      .vs { margin:0 12px; }
+      .team { gap:8px; }
+      .team img { width:22px; height:22px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <!-- local logo file — spaces encoded in src -->
+    <img class="logo" src="Circle%20Baseball%20Club%20Sports%20Transparent%20ttcopy.png" alt="Ashland Little League Logo">
+    <h1>Ashland Little League Standings</h1>
+  </header>
+
+  <p id="currentDate" style="color:#555;margin-top:8px;"></p>
+
+  <div class="table-container">
+    <table id="standings">
+      <thead>
+        <tr><th>Team</th><th>Wins</th><th>Losses</th><th>GP</th><th>Win %</th><th>GB</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <h2 style="margin-top:28px">Recent Game Scores</h2>
+  <div class="table-container">
+    <table id="scores">
+      <thead><tr><th>Date</th><th>Matchup</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    // --- Team data (uses ESPN CDN logos) ---
+    const teams = [
+      { name: "Phillies", wins: 3, losses: 1, logo: "https://a.espncdn.com/i/teamlogos/mlb/500/phi.png" },
+      { name: "Pirates",  wins: 2, losses: 2, logo: "https://a.espncdn.com/i/teamlogos/mlb/500/pit.png" },
+      { name: "Orioles",  wins: 1, losses: 3, logo: "https://a.espncdn.com/i/teamlogos/mlb/500/bal.png" },
+      { name: "Yankees",  wins: 4, losses: 0, logo: "https://a.espncdn.com/i/teamlogos/mlb/500/nyy.png" },
+      { name: "Athletics",wins: 2, losses: 2, logo: "https://a.espncdn.com/i/teamlogos/mlb/500/oak.png" },
+      { name: "Dodgers",  wins: 0, losses: 4, logo: "https://a.espncdn.com/i/teamlogos/mlb/500/la.png" }
+    ];
+
+    // --- Games (winner shown first in UI automatically) ---
+    const games = [
+      { date: "2025-09-10", team1:"Yankees", score1:8, team2:"Dodgers", score2:1 },
+      { date: "2025-09-09", team1:"Phillies", score1:5, team2:"Pirates", score2:3 },
+      { date: "2025-09-07", team1:"Phillies", score1:6, team2:"Orioles", score2:4 },
+      { date: "2025-09-05", team1:"Yankees", score1:4, team2:"Athletics", score2:2 },
+      { date: "2025-09-03", team1:"Pirates", score1:7, team2:"Dodgers", score2:1 },
+      { date: "2025-09-02", team1:"Orioles", score1:2, team2:"Athletics", score2:6 },
+      { date: "2025-09-01", team1:"Yankees", score1:5, team2:"Phillies", score2:3 }
+    ];
+
+    // helper to find logo from teams array
+    function findLogo(teamName) {
+      const t = teams.find(x => x.name === teamName);
+      return t ? t.logo : '';
+    }
+
+    // fallback small gray circle data URL
+    const fallbackDataURL = "data:image/svg+xml;utf8," + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64">' +
+      '<circle cx="32" cy="32" r="30" fill="%23cfd7e3"/></svg>'
+    );
+
+    function applyImgFallback(img) {
+      img.onerror = function() {
+        console.warn("Image failed to load:", img.src);
+        img.onerror = null;
+        img.src = fallbackDataURL;
+      };
+    }
+
+    // Build standings table
+    function buildStandings() {
+      const tbody = document.querySelector("#standings tbody");
+      tbody.innerHTML = "";
+      teams.forEach(t => {
+        t.GP = t.wins + t.losses;
+        t.winPct = t.GP ? (t.wins / t.GP) : 0;
+      });
+      teams.sort((a,b) => b.winPct - a.winPct || b.wins - a.wins);
+      const leader = teams[0];
+      teams.forEach(t => t.GB = ((leader.wins - t.wins) + (t.losses - leader.losses))/2 );
+
+      teams.forEach(t => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="team"><img src="${t.logo}" alt="${t.name} logo"><span>${t.name}</span></td>
+          <td>${t.wins}</td><td>${t.losses}</td>
+          <td>${t.GP}</td>
+          <td>${t.winPct.toFixed(3)}</td>
+          <td>${t.GB === 0 ? '-' : t.GB.toFixed(1)}</td>
+        `;
+        // apply fallback for the image we just added
+        applyImgFallback(tr.querySelector("img"));
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Build games table (winner first, highlight winner)
+    function buildGames() {
+      const tbody = document.querySelector("#scores tbody");
+      tbody.innerHTML = "";
+      // sort by date desc
+      games.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+      games.forEach(g => {
+        // determine winner/loser
+        let winnerName, loserName, winnerScore, loserScore;
+        if (g.score1 >= g.score2) {
+          winnerName = g.team1; winnerScore = g.score1;
+          loserName = g.team2; loserScore = g.score2;
+        } else {
+          winnerName = g.team2; winnerScore = g.score2;
+          loserName = g.team1; loserScore = g.score1;
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${g.date}</td>
+          <td>
+            <div class="matchup">
+              <div class="team-block">
+                <img src="${findLogo(winnerName)}" alt="${winnerName} logo" width="28" height="28">
+                <span class="winner">${winnerName} (${winnerScore})</span>
+              </div>
+              <span class="vs">vs</span>
+              <div class="team-block">
+                <img src="${findLogo(loserName)}" alt="${loserName} logo" width="28" height="28">
+                <span class="loser">${loserName} (${loserScore})</span>
+              </div>
+            </div>
+          </td>
+        `;
+        // apply fallback for both images in this row
+        Array.from(tr.querySelectorAll("img")).forEach(applyImgFallback);
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById("currentDate").textContent = "Updated: " + new Date().toLocaleDateString();
+
+    buildStandings();
+    buildGames();
+
+    // -- Debug helper: show console instructions
+    console.log("If the Ashland logo doesn't appear, ensure the file 'Circle Baseball Club Sports Transparent ttcopy.png' is in the same folder as this HTML file.");
+  </script>
+</body>
+</html>

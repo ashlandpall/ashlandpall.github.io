@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ashland Little League Standings</title>
+  <link rel="icon" type="image/png" href="Circle Baseball Club Sports Transparent ttcopy.png">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+    h1 { display: flex; align-items: center; justify-content: center; gap: 15px; }
+    h1 img { height: 60px; }
+    table { width: 80%; margin: 20px auto; border-collapse: collapse; }
+    th, td { border: 1px solid #333; padding: 8px 15px; text-align: center; }
+    th { background-color: #eee; }
+    .game { display: flex; justify-content: center; align-items: center; gap: 40px; margin: 12px 0; font-size: 1.1em; }
+    .team { display: flex; align-items: center; gap: 12px; font-weight: bold; }
+    .team img { height: 28px; }
+    .score { font-size: 1.1em; margin-left: 8px; font-weight: normal; }
+  </style>
+</head>
+<body>
+  <h1>
+    <img src="Circle Baseball Club Sports Transparent ttcopy.png" alt="Ashland LL Logo">
+    Ashland Little League Standings
+  </h1>
+  <p id="date"></p>
+
+  <!-- Standings Table -->
+  <table id="standings">
+    <thead>
+      <tr>
+        <th>Team</th>
+        <th>Wins</th>
+        <th>Losses</th>
+        <th>Games Played</th>
+        <th>Win %</th>
+        <th>Games Back</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- Recent Scores -->
+  <h2>Recent Game Scores</h2>
+  <div id="games"></div>
+
+  <script>
+    document.getElementById("date").textContent = "Date: " + new Date().toLocaleDateString();
+
+    let teams = [];
+    let games = [];
+
+    fetch("data.json")
+      .then(res => res.json())
+      .then(data => {
+        teams = data.teams;
+        games = data.games;
+        buildStandings();
+        buildGames();
+      });
+
+    function buildStandings() {
+      teams.forEach(t => t.pct = (t.wins / (t.wins + t.losses)).toFixed(3));
+      const leaderWins = Math.max(...teams.map(t => t.wins));
+      teams.forEach(t => t.gb = ((leaderWins - t.wins) / 2).toFixed(1));
+      teams.sort((a, b) => b.pct - a.pct || b.wins - a.wins);
+
+      const tbody = document.querySelector("#standings tbody");
+      tbody.innerHTML = "";
+      teams.forEach(team => {
+        const row = `<tr>
+          <td><img src="${team.logo}" height="20" style="margin-right:8px;">${team.name}</td>
+          <td>${team.wins}</td>
+          <td>${team.losses}</td>
+          <td>${team.wins + team.losses}</td>
+          <td>${team.pct}</td>
+          <td>${team.gb == 0 ? "-" : team.gb}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function buildGames() {
+      const gamesDiv = document.getElementById("games");
+      gamesDiv.innerHTML = "";
+      games.forEach(g => {
+        const winnerLogo = teams.find(t => t.name === g.winner).logo;
+        const loserLogo = teams.find(t => t.name === g.loser).logo;
+
+        const gameRow = `
+          <div class="game">
+            <span>${g.date}</span>
+            <div class="team"><img src="${winnerLogo}"> ${g.winner} <span class="score">${g.winnerScore}</span></div>
+            <div class="team"><img src="${loserLogo}"> ${g.loser} <span class="score">${g.loserScore}</span></div>
+          </div>`;
+        gamesDiv.innerHTML += gameRow;
+      });
+    }
+  </script>
+</body>
+</html>
